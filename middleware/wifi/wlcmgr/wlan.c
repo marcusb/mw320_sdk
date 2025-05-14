@@ -1806,12 +1806,11 @@ static void wlcm_process_authentication_event(struct wifi_message * msg, enum cm
 
         if (is_state(CM_STA_REQUESTING_ADDRESS) || is_state(CM_STA_OBTAINING_ADDRESS))
         {
-            void * if_handle_tmp = NULL;
             /* On Link loss, we need to take down the interface. */
             if (network->type == WLAN_BSS_TYPE_STA)
-                if_handle_tmp = net_get_mlan_handle();
+                if_handle = net_get_mlan_handle();
 
-            if (if_handle_tmp)
+            if (if_handle)
             {
                 net_interface_down(if_handle);
                 /* Forcefully stop dhcp on given interface.
