@@ -160,6 +160,11 @@ static uint32_t AES_ReadWordFromArray(aes_input_data_array_t arrays[], uint8_t t
     aes_input_data_array_t *pArray;
     aes_word_byte_t ret;
 
+    if (*curArrayIndex >= totalArrays)
+    {
+        return 0;
+    }
+
     pArray = &arrays[*curArrayIndex];
 
     if (pArray->len >= sizeof(uint32_t))
@@ -207,6 +212,11 @@ static void AES_WriteWordToArray(aes_output_data_array_t arrays[],
     uint8_t byteCopyIndex;
     aes_output_data_array_t *pArray;
     aes_word_byte_t data;
+
+    if (*curArrayIndex >= totalArrays)
+    {
+        return;
+    }
 
     pArray = &arrays[*curArrayIndex];
 
