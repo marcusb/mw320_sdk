@@ -164,7 +164,7 @@ static uint32_t AES_ReadWordFromArray(aes_input_data_array_t arrays[], uint8_t t
 
     if (pArray->len >= sizeof(uint32_t))
     {
-        ret.word = *(uint32_t *)(pArray->data);
+        memcpy(&ret.word, pArray->data, sizeof(uint32_t));
         pArray->len -= sizeof(uint32_t);
         pArray->data += sizeof(uint32_t);
     }
@@ -215,7 +215,7 @@ static void AES_WriteWordToArray(aes_output_data_array_t arrays[],
         /* If pArray->data is NULL, drop the data. */
         if (NULL != pArray->data)
         {
-            *(uint32_t *)(pArray->data) = word;
+            memcpy(pArray->data, &word, sizeof(uint32_t));
             pArray->data += sizeof(uint32_t);
         }
 
@@ -287,7 +287,9 @@ static void AES_Operation(AES_Type *base,
             /* Input FIFO not full, feed data. */
             if (0U == (AES_GetStatus(base) & kAES_InputFIFOFullFlag))
             {
-                AES_WriteData(base, *(const uint32_t *)input);
+                uint32_t word;
+                memcpy(&word, input, sizeof(uint32_t));
+                AES_WriteData(base, word);
                 input += sizeof(uint32_t);
                 inputSize -= sizeof(uint32_t);
             }
@@ -296,7 +298,8 @@ static void AES_Operation(AES_Type *base,
         /* Output FIFO not empty, read data. */
         if (0U == (AES_GetStatus(base) & kAES_OutputFIFOEmptyFlag))
         {
-            *(uint32_t *)output = AES_ReadData(base);
+            uint32_t word = AES_ReadData(base);
+            memcpy(output, &word, sizeof(uint32_t));
             output += sizeof(uint32_t);
             outputSize -= sizeof(uint32_t);
         }
@@ -438,10 +441,12 @@ void AES_Reset(AES_Type *base)
  */
 void AES_SetInputVector(AES_Type *base, const uint8_t inputVector[AES_VECTOR_SIZE])
 {
-    base->IV0 = ((uint32_t *)inputVector)[0];
-    base->IV1 = ((uint32_t *)inputVector)[1];
-    base->IV2 = ((uint32_t *)inputVector)[2];
-    base->IV3 = ((uint32_t *)inputVector)[3];
+    uint32_t iv[4];
+    memcpy(iv, inputVector, sizeof(iv));
+    base->IV0 = iv[0];
+    base->IV1 = iv[1];
+    base->IV2 = iv[2];
+    base->IV3 = iv[3];
 }
 
 /*!
@@ -452,10 +457,12 @@ void AES_SetInputVector(AES_Type *base, const uint8_t inputVector[AES_VECTOR_SIZ
  */
 void AES_GetOutputVector(AES_Type *base, uint8_t outputVector[AES_VECTOR_SIZE])
 {
-    ((uint32_t *)outputVector)[0] = base->OV0;
-    ((uint32_t *)outputVector)[1] = base->OV1;
-    ((uint32_t *)outputVector)[2] = base->OV2;
-    ((uint32_t *)outputVector)[3] = base->OV3;
+    uint32_t ov[4];
+    ov[0] = base->OV0;
+    ov[1] = base->OV1;
+    ov[2] = base->OV2;
+    ov[3] = base->OV3;
+    memcpy(outputVector, ov, sizeof(ov));
 }
 
 /*!
@@ -545,9 +552,11 @@ status_t AES_SetKey(AES_Type *base, const uint8_t *key, size_t keySize)
         /* Set aesKeySize.  */
         base->CTRL1 = (base->CTRL1 & ~AES_CTRL1_KEY_SIZE_MASK) | AES_CTRL1_KEY_SIZE(aesKeySize);
 
+        uint32_t key_words[8];
+        memcpy(key_words, key, keySize);
         for (i = 0; i < keySize / 4; i++)
         {
-            (&base->KEY0)[7 - i] = ((const uint32_t *)key)[i];
+            (&base->KEY0)[7 - i] = key_words[i];
         }
         for (; i < 8; i++)
         {
@@ -1047,10 +1056,10 @@ status_t AES_CalculateMMOHash(AES_Type *base, const uint8_t *input, size_t size,
 
     AES_Start(base);
 
-    /* Handle the 4-byte aligned part. */
+    /* Handle the 4-byte parts. */
     while (size >= sizeof(uint32_t))
     {
-        dataToWrite.word = *(const uint32_t *)input;
+        memcpy(&dataToWrite.word, input, sizeof(uint32_t));
         input += sizeof(uint32_t);
         size -= sizeof(uint32_t);
 
