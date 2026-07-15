@@ -129,8 +129,8 @@ typedef enum _osa_status
 #else
 #define OSA_EVENT_HANDLE_SIZE (16U)
 #endif /* FSL_OSA_TASK_ENABLE */
-#define OSA_SEM_HANDLE_SIZE   (12U)
-#define OSA_MUTEX_HANDLE_SIZE (12U)
+#define OSA_SEM_HANDLE_SIZE   (24U)
+#define OSA_MUTEX_HANDLE_SIZE (24U)
 #if (defined(FSL_OSA_TASK_ENABLE) && (FSL_OSA_TASK_ENABLE > 0U))
 #define OSA_MSGQ_HANDLE_SIZE (32U)
 #else

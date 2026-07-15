@@ -371,14 +371,14 @@ status_t SDMMCHOST_Init(sdmmchost_t *host)
 
     SDIOC_Init(host->base, &config);
 
-    /* Create handle for SDIOC driver */
-    SDIOC_TransferCreateHandle(host->base, sdiocHandle, &callback, host);
-
     /* Create transfer event. */
     if (kStatus_Success != SDMMC_OSAEventCreate(&(host->hostEvent)))
     {
         return kStatus_Fail;
     }
+
+    /* Create handle for SDIOC driver */
+    SDIOC_TransferCreateHandle(host->base, sdiocHandle, &callback, host);
 
     return kStatus_Success;
 }

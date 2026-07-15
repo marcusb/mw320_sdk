@@ -198,7 +198,7 @@ typedef enum _KEY_INFO_AES
 #define MRVDRV_SNAP_HEADER_LEN 8
 
 /** The number of times to try when polling for status bits */
-#define MAX_POLL_TRIES 100
+#define MAX_POLL_TRIES 1000
 
 /** The number of times to try when waiting for downloaded firmware to
      become active when multiple interface is present */
