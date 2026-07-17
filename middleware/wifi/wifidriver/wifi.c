@@ -120,7 +120,9 @@ void wifi_update_last_cmd_sent_ms()
 
 static int wifi_get_command_resp_sem(unsigned long wait)
 {
-    return os_semaphore_get(&wm_wifi.command_resp_sem, wait);
+    if (wait == OS_WAIT_FOREVER)
+        return os_semaphore_get(&wm_wifi.command_resp_sem, OS_WAIT_FOREVER);
+    return os_semaphore_get(&wm_wifi.command_resp_sem, os_msec_to_ticks(wait));
 }
 
 static int wifi_put_command_resp_sem(void)
