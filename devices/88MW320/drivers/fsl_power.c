@@ -19,8 +19,8 @@ typedef struct _power_nvic_context
 {
     uint32_t PriorityGroup;
     uint32_t ISER[2];
-    uint8_t IP[64];
-    uint8_t SHP[12];
+    uint8_t IPR[64];
+    uint8_t SHPR[12];
     uint32_t ICSR;
     uint32_t VTOR;
     uint32_t AIRCR;
@@ -107,18 +107,18 @@ static void POWER_SaveNvicState(void)
     irqNum  = irqRegs * 32;
 
     assert(irqRegs <= ARRAY_SIZE(s_nvicContext.ISER));
-    assert(irqNum <= ARRAY_SIZE(s_nvicContext.IP));
+    assert(irqNum <= ARRAY_SIZE(s_nvicContext.IPR));
 
-    s_nvicContext.PriorityGroup = NVIC_GetPriorityGrouping();
-
+    /* Save NVIC state. */
     for (i = 0; i < irqRegs; i++)
     {
         s_nvicContext.ISER[i] = NVIC->ISER[i];
+        NVIC->ICER[i]         = 0xFFFFFFFFU;
     }
 
     for (i = 0; i < irqNum; i++)
     {
-        s_nvicContext.IP[i] = NVIC->IP[i];
+        s_nvicContext.IPR[i] = NVIC->IPR[i];
     }
 
     /* Save SCB configuration */
@@ -133,13 +133,13 @@ static void POWER_SaveNvicState(void)
     s_nvicContext.BFAR  = SCB->BFAR;
     s_nvicContext.CPACR = SCB->CPACR;
 
-    s_nvicContext.SHP[0]  = SCB->SHP[0];  /* MemManage */
-    s_nvicContext.SHP[1]  = SCB->SHP[1];  /* BusFault */
-    s_nvicContext.SHP[2]  = SCB->SHP[2];  /* UsageFault */
-    s_nvicContext.SHP[7]  = SCB->SHP[7];  /* SVCall */
-    s_nvicContext.SHP[8]  = SCB->SHP[8];  /* DebugMonitor */
-    s_nvicContext.SHP[10] = SCB->SHP[10]; /* PendSV */
-    s_nvicContext.SHP[11] = SCB->SHP[11]; /* SysTick */
+    s_nvicContext.SHPR[0]  = SCB->SHPR[0];  /* MemManage */
+    s_nvicContext.SHPR[1]  = SCB->SHPR[1];  /* BusFault */
+    s_nvicContext.SHPR[2]  = SCB->SHPR[2];  /* UsageFault */
+    s_nvicContext.SHPR[7]  = SCB->SHPR[7];  /* SVCall */
+    s_nvicContext.SHPR[8]  = SCB->SHPR[8];  /* DebugMonitor */
+    s_nvicContext.SHPR[10] = SCB->SHPR[10]; /* PendSV */
+    s_nvicContext.SHPR[11] = SCB->SHPR[11]; /* SysTick */
 }
 
 static void POWER_RestoreNvicState(void)
@@ -160,7 +160,7 @@ static void POWER_RestoreNvicState(void)
 
     for (i = 0; i < irqNum; i++)
     {
-        NVIC->IP[i] = s_nvicContext.IP[i];
+        NVIC->IPR[i] = s_nvicContext.IPR[i];
     }
 
     /* Restore SCB configuration */
@@ -175,13 +175,13 @@ static void POWER_RestoreNvicState(void)
     SCB->BFAR  = s_nvicContext.BFAR;
     SCB->CPACR = s_nvicContext.CPACR;
 
-    SCB->SHP[0]  = s_nvicContext.SHP[0];  /* MemManage */
-    SCB->SHP[1]  = s_nvicContext.SHP[1];  /* BusFault */
-    SCB->SHP[2]  = s_nvicContext.SHP[2];  /* UsageFault */
-    SCB->SHP[7]  = s_nvicContext.SHP[7];  /* SVCall */
-    SCB->SHP[8]  = s_nvicContext.SHP[8];  /* DebugMonitor */
-    SCB->SHP[10] = s_nvicContext.SHP[10]; /* PendSV */
-    SCB->SHP[11] = s_nvicContext.SHP[11]; /* SysTick */
+    SCB->SHPR[0]  = s_nvicContext.SHPR[0];  /* MemManage */
+    SCB->SHPR[1]  = s_nvicContext.SHPR[1];  /* BusFault */
+    SCB->SHPR[2]  = s_nvicContext.SHPR[2];  /* UsageFault */
+    SCB->SHPR[7]  = s_nvicContext.SHPR[7];  /* SVCall */
+    SCB->SHPR[8]  = s_nvicContext.SHPR[8];  /* DebugMonitor */
+    SCB->SHPR[10] = s_nvicContext.SHPR[10]; /* PendSV */
+    SCB->SHPR[11] = s_nvicContext.SHPR[11]; /* SysTick */
 }
 
 /**
