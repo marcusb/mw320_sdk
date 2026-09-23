@@ -446,6 +446,15 @@ int wifi_add_mcast_filter(uint8_t * mac_addr);
  */
 int wifi_remove_mcast_filter(uint8_t * mac_addr);
 
+/** Refresh Multicast Filters to Hardware
+ *
+ * This function re-sends the active multicast filter list to the Wi-Fi
+ * firmware, e.g. after association when the hardware filter table may be reset.
+ *
+ * \return 0 on Success or else Error
+ */
+int wifi_refresh_mcast_filters(void);
+
 /** Get Multicast Mapped Mac address from IPv4
  *
  * This function will generate Multicast Mapped MAC address from IPv4

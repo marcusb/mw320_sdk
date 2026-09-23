@@ -912,7 +912,7 @@ static int add_mcast_ip(uint8_t * mac_addr)
     if (!cmp_mac_addr(node_t->mac_addr, mac_addr))
     {
         wifi_put_mcastf_lock();
-        return -WM_FAIL;
+        return WM_SUCCESS;
     }
     new_node = os_mem_alloc(sizeof(mcast_filter));
     if (new_node == NULL)
@@ -931,20 +931,12 @@ static int remove_mcast_ip(uint8_t * mac_addr)
 {
     mcast_filter *curr_node, *prev_node;
     wifi_get_mcastf_lock();
-    curr_node = wm_wifi.start_list->next;
-    prev_node = wm_wifi.start_list;
     if (wm_wifi.start_list == NULL)
     {
         wifi_put_mcastf_lock();
         return -WM_FAIL;
     }
-    if (curr_node == NULL && cmp_mac_addr(prev_node->mac_addr, mac_addr))
-    {
-        os_mem_free(prev_node);
-        wm_wifi.start_list = NULL;
-        wifi_put_mcastf_lock();
-        return WM_SUCCESS;
-    }
+    prev_node = wm_wifi.start_list;
     /* If search element is at first location */
     if (!cmp_mac_addr(prev_node->mac_addr, mac_addr))
     {
@@ -953,13 +945,14 @@ static int remove_mcast_ip(uint8_t * mac_addr)
         wifi_put_mcastf_lock();
         return WM_SUCCESS;
     }
+    curr_node = prev_node->next;
     /* Find node in linked list */
-    while (cmp_mac_addr(curr_node->mac_addr, mac_addr) && curr_node->next != NULL)
+    while (curr_node != NULL && cmp_mac_addr(curr_node->mac_addr, mac_addr))
     {
         prev_node = curr_node;
         curr_node = curr_node->next;
     }
-    if (!cmp_mac_addr(curr_node->mac_addr, mac_addr))
+    if (curr_node != NULL && !cmp_mac_addr(curr_node->mac_addr, mac_addr))
     {
         prev_node->next = curr_node->next;
         os_mem_free(curr_node);
@@ -1067,6 +1060,17 @@ int wifi_remove_mcast_filter(uint8_t * mac_addr)
     len = make_filter_list(mlist, MAX_MCAST_LEN);
     ret = wifi_set_mac_multicast_addr(mlist, len);
     return ret;
+}
+
+int wifi_refresh_mcast_filters(void)
+{
+    char mlist[MAX_MCAST_LEN];
+    int len = make_filter_list(mlist, MAX_MCAST_LEN);
+    if (len > 0)
+    {
+        return wifi_set_mac_multicast_addr(mlist, len);
+    }
+    return WM_SUCCESS;
 }
 
 /* Since we do not have the descriptor list we will using this adaptor function */
